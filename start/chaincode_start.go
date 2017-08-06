@@ -33,19 +33,19 @@ type Order struct {
 	OrderId                             string      `json:"order_id"`
     ClientId                            string      `json:"client_id"`
     LogisticProviderId                  string      `json:"logistic_provider_id"`
-    InvoiceValue                        int         `json:"invoice_value"`
+    InvoiceValue                        int         `json:"invoice_value,string"`
     OriginZipCode                       string      `json:"origin_zip_code"`
     DestinationZipCode                  string      `json:"destination_zip_code"`    
-    ClientWeight                        int         `json:"client_weight"`
-    ClientWidth                         int         `json:"client_width"`
-    ClientLength                        int         `json:"client_length"`
-    ClientHeight                        int         `json:"client_height"`
-    ClientFinalShippingCost             int         `json:"client_final_shipping_cost"`
-    LogisticProviderWeight              int         `json:"logistic_provider_weight"`
-    LogisticProviderWidth               int         `json:"logistic_provider_width"`
-    LogisticProviderLength              int         `json:"logistic_provider_length"`
-    LogisticProviderHeight              int         `json:"logistic_provider_height"`
-    LogisticProviderFinalShippingCost   int         `json:"logistic_provider_final_shipping_cost"`
+    ClientWeight                        int         `json:"client_weight,string"`
+    ClientWidth                         int         `json:"client_width,string"`
+    ClientLength                        int         `json:"client_length,string"`
+    ClientHeight                        int         `json:"client_height,string"`
+    ClientFinalShippingCost             int         `json:"client_final_shipping_cost,string"`
+    LogisticProviderWeight              int         `json:"logistic_provider_weight,string"`
+    LogisticProviderWidth               int         `json:"logistic_provider_width,string"`
+    LogisticProviderLength              int         `json:"logistic_provider_length,string"`
+    LogisticProviderHeight              int         `json:"logistic_provider_height,string"`
+    LogisticProviderFinalShippingCost   int         `json:"logistic_provider_final_shipping_cost,string"`
 }
 
 // ============================================================================================================================
