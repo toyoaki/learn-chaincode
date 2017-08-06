@@ -21,8 +21,7 @@ import (
 	"fmt"
 	"math/rand"	
 	"strconv"
-	"encoding/json"
-	"strings"
+	"encoding/json"	
 	"github.com/hyperledger/fabric/core/chaincode/shim"	
 )
 
@@ -113,7 +112,7 @@ func (t *SimpleChaincode) ShipperShip(stub shim.ChaincodeStubInterface, args []s
 		return nil, errors.New("[ShipperShip] Error marshalling order")
 	}
 
-	err = stub.PutState("order", bytes)
+	err = stub.PutState(order.OrderId, bytes)
 
 	if err != nil { 
 		return nil, errors.New("[ShipperShip] Unable to put the state") 
@@ -132,7 +131,8 @@ func (t *SimpleChaincode) SendEvent(stub shim.ChaincodeStubInterface, function s
 }
 
 func (t *SimpleChaincode) Quote(stub shim.ChaincodeStubInterface, source string, args []string) ([]byte, error) {
-	return nil, errors.New("Quote: " + source + " --- " + strings.Join(args," "))
+	//return nil, errors.New("Quote: " + source + " --- " + strings.Join(args," "))
+	return nil, nil
 }
 
 // Query is our entry point for queries
