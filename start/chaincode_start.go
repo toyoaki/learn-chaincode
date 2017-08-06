@@ -58,10 +58,34 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 	// Handle different functions
 	if function == "init" {													//initialize the chaincode state, used as reset
 		return t.Init(stub, "init", args)
+	} else if function == "ShipperShip" {													//initialize the chaincode state, used as reset
+		return t.ShipperShip(stub, "init", args)
+	} else if function == "LogisticProviderShip" {													//initialize the chaincode state, used as reset
+		return t.LogisticProviderShip(stub, "init", args)	
 	}
-	fmt.Println("invoke did not find func: " + function)					//error
 
+	fmt.Println("invoke did not find func: " + function)					//error
 	return nil, errors.New("Received unknown function invocation: " + function)
+}
+
+// Salvar dados do embarcador
+func (t *SimpleChaincode) ShipperShip(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
+	// salvar dados físicos
+	return t.SendEvent(stub, "ShipperShip", args);
+}
+
+func (t *SimpleChaincode) LogisticProviderShip(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
+	// salvar dados físicos
+	return t.SendEvent(stub, "LogisticProviderShip", args);
+}
+
+// Simulate event sending
+func (t *SimpleChaincode) SendEvent(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
+	return t.Quote(stub, function, args);
+}
+
+func (t *SimpleChaincode) Quote(stub shim.ChaincodeStubInterface, source string, args []string) ([]byte, error) {
+	return nil, errors.New("Quote: " + source)
 }
 
 // Query is our entry point for queries
