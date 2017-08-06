@@ -131,6 +131,8 @@ func (t *SimpleChaincode) SendEvent(stub shim.ChaincodeStubInterface, source str
 }
 
 func (t *SimpleChaincode) Quote(stub shim.ChaincodeStubInterface, orderId string) ([]byte, error) {
+	fmt.Println("[Quote] for orderId: " + orderId)
+
 	var valAsBytes []byte
 	valAsBytes, err := stub.GetState(orderId)
 
@@ -142,11 +144,17 @@ func (t *SimpleChaincode) Quote(stub shim.ChaincodeStubInterface, orderId string
 	
 	json.Unmarshal(valAsBytes, &order)
 
+	fmt.Println("[Quote] found order: " + order)
+
 	order.ClientFinalShippingCost = order.InvoiceValue * order.ClientWeight * order.ClientWidth * order.ClientLength * order.ClientHeight
+
+	fmt.Println("[Quote] calculated final shipping cost: " + order.ClientFinalShippingCost + " for orderId: " + orderId)
 
 	orderAsBytes, err := json.Marshal(order)	
 	
 	err = stub.PutState(order.OrderId, orderAsBytes)
+
+	fmt.Println("[Quote] saved order with orderId: " + orderId)
 
 	return nil, err
 }
