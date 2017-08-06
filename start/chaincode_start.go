@@ -144,11 +144,11 @@ func (t *SimpleChaincode) Quote(stub shim.ChaincodeStubInterface, orderId string
 	
 	json.Unmarshal(valAsBytes, &order)
 
-	fmt.Println("[Quote] found order: " + order)
+	fmt.Println("[Quote] found order: " + order.OrderId)
 
 	order.ClientFinalShippingCost = order.InvoiceValue * order.ClientWeight * order.ClientWidth * order.ClientLength * order.ClientHeight
 
-	fmt.Println("[Quote] calculated final shipping cost: " + order.ClientFinalShippingCost + " for orderId: " + orderId)
+	fmt.Println("[Quote] calculated final shipping cost: " + strconv.Itoa(order.ClientFinalShippingCost) + " for orderId: " + orderId)
 
 	orderAsBytes, err := json.Marshal(order)	
 	
