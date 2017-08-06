@@ -33,19 +33,19 @@ type Order struct {
 	OrderId                             string      `json:"order_id"`
     ClientId                            string      `json:"client_id"`
     LogisticProviderId                  string      `json:"logistic_provider_id"`
-    InvoiceValue                        int         `json:"invoice_value,string"`
+    InvoiceValue                        int         `json:"invoice_value"`
     OriginZipCode                       string      `json:"origin_zip_code"`
     DestinationZipCode                  string      `json:"destination_zip_code"`    
-    ClientWeight                        int         `json:"client_weight,string"`
-    ClientWidth                         int         `json:"client_width,string"`
-    ClientLength                        int         `json:"client_length,string"`
-    ClientHeight                        int         `json:"client_height,string"`
-    ClientFinalShippingCost             int         `json:"client_final_shipping_cost,string"`
-    LogisticProviderWeight              int         `json:"logistic_provider_weight,string"`
-    LogisticProviderWidth               int         `json:"logistic_provider_width,string"`
-    LogisticProviderLength              int         `json:"logistic_provider_length,string"`
-    LogisticProviderHeight              int         `json:"logistic_provider_height,string"`
-    LogisticProviderFinalShippingCost   int         `json:"logistic_provider_final_shipping_cost,string"`
+    ClientWeight                        int         `json:"client_weight"`
+    ClientWidth                         int         `json:"client_width"`
+    ClientLength                        int         `json:"client_length"`
+    ClientHeight                        int         `json:"client_height"`
+    ClientFinalShippingCost             int         `json:"client_final_shipping_cost"`
+    LogisticProviderWeight              int         `json:"logistic_provider_weight"`
+    LogisticProviderWidth               int         `json:"logistic_provider_width"`
+    LogisticProviderLength              int         `json:"logistic_provider_length"`
+    LogisticProviderHeight              int         `json:"logistic_provider_height"`
+    LogisticProviderFinalShippingCost   int         `json:"logistic_provider_final_shipping_cost"`
 }
 
 // ============================================================================================================================
@@ -87,6 +87,8 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 
 // Salvar dados do embarcador
 func (t *SimpleChaincode) ShipperShip(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {	
+	fmt.Println("[ShipperShip] save")
+
 	if len(args) != 9 {
 		return nil, errors.New("[ShipperShip] Incorrect number of arguments. Expecting 9")
 	}
@@ -106,13 +108,19 @@ func (t *SimpleChaincode) ShipperShip(stub shim.ChaincodeStubInterface, args []s
     order.ClientLength, err       = strconv.Atoi(string(args[7]))
     order.ClientHeight, err       = strconv.Atoi(string(args[8]))
 
+    fmt.Println("[ShipperShip] Args parsed for OrderId: " + order.OrderId)
+
 	bytes, err = json.Marshal(order)
+
+	fmt.Println("[ShipperShip] Order marshalled for OrderId" + order.OrderId)
 	
 	if err != nil { 		
 		return nil, errors.New("[ShipperShip] Error marshalling order")
 	}
 
 	err = stub.PutState(order.OrderId, bytes)
+
+	fmt.Println("[ShipperShip] PutState for OrderId: " + order.OrderId)
 
 	if err != nil { 
 		return nil, errors.New("[ShipperShip] Unable to put the state") 
@@ -127,6 +135,7 @@ func (t *SimpleChaincode) LogisticProviderShip(stub shim.ChaincodeStubInterface,
 
 // Simulate event sending
 func (t *SimpleChaincode) SendEvent(stub shim.ChaincodeStubInterface, source string, orderId string) ([]byte, error) {
+	fmt.Println("[SendEvent] Send event with source " + source + " for OrderId: " + orderId)
 	return t.Quote(stub, orderId);
 }
 
