@@ -118,21 +118,37 @@ func (t *SimpleChaincode) ShipperShip(stub shim.ChaincodeStubInterface, args []s
 		return nil, errors.New("[ShipperShip] Unable to put the state") 
 	}
     
-	return t.SendEvent(stub, "ShipperShip", args);
+	return t.SendEvent(stub, "ShipperShip", order.OrderId);
 }
 
 func (t *SimpleChaincode) LogisticProviderShip(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {	
-	return t.SendEvent(stub, "LogisticProviderShip", args);
+	return t.SendEvent(stub, "LogisticProviderShip", "123");
 }
 
 // Simulate event sending
-func (t *SimpleChaincode) SendEvent(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
-	return t.Quote(stub, function, args);
+func (t *SimpleChaincode) SendEvent(stub shim.ChaincodeStubInterface, source string, orderId string) ([]byte, error) {
+	return t.Quote(stub, orderId);
 }
 
-func (t *SimpleChaincode) Quote(stub shim.ChaincodeStubInterface, source string, args []string) ([]byte, error) {
-	//return nil, errors.New("Quote: " + source + " --- " + strings.Join(args," "))
-	return nil, nil
+func (t *SimpleChaincode) Quote(stub shim.ChaincodeStubInterface, orderId string) ([]byte, error) {
+	var valAsBytes []byte
+	valAsBytes, err := stub.GetState(orderId)
+
+	if err != nil {		
+		return nil, errors.New("[Quote] Unknown error")
+	}
+
+	var order Order
+	
+	json.Unmarshal(valAsBytes, &order)
+
+	order.ClientFinalShippingCost = order.InvoiceValue * order.ClientWeight * order.ClientWidth * order.ClientLength * order.ClientHeight
+
+	orderAsBytes, err := json.Marshal(order)	
+	
+	err = stub.PutState(order.OrderId, orderAsBytes)
+
+	return nil, err
 }
 
 // Query is our entry point for queries
