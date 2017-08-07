@@ -248,6 +248,8 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 		logisticProviderId := args[1]
 		pendingOrder, err := strconv.ParseBool(args[2])
 
+		hasResult := false
+
 		defer resultsIterator.Close()
 
 		result := "{\"orders\": ["
@@ -279,13 +281,14 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 
 			if(clientIdOk && logisticProviderIdOk && findPendingOk) {
 				result += string(queryValAsBytes) + ","
+				hasResult = true
 			}
 		}
 
-		if len(result) == 1 {
-			result = "]}"
-		} else {
+		if hasResult {
 			result = result[:len(result)-1] + "]}"
+		} else {
+			result = "]}"
 		}
 
 		return []byte(result), nil
