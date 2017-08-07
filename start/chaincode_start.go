@@ -18,8 +18,8 @@ package main
 
 import (
 	"errors"
-	"fmt"
-	"math/rand"	
+	"fmt"	
+	"time"
 	"strconv"
 	"encoding/json"	
 	"github.com/hyperledger/fabric/core/chaincode/shim"	
@@ -98,7 +98,7 @@ func (t *SimpleChaincode) ShipperShip(stub shim.ChaincodeStubInterface, args []s
 	var err error
 	var bytes []byte
 
-	order.OrderId 			      = "order-" + strconv.Itoa(rand.Intn(100000000))
+	order.OrderId 			      = "order-" + strconv.FormatInt(time.Now().Unix(), 10)
     order.ClientId 			      = args[0]
     order.LogisticProviderId      = args[1]
     order.InvoiceValue, err       = strconv.Atoi(string(args[2]))
@@ -238,7 +238,7 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 	}
 
 	if function == "findByClientIdAndLogisticProviderId" {
-		resultsIterator, err := stub.RangeQueryState("order-0", "order-999999999")
+		resultsIterator, err := stub.RangeQueryState("order-0", "order-99999999999999")
 
 		if err != nil {
 			return nil, errors.New("[IP][Query] Unknown error")
