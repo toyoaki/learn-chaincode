@@ -288,7 +288,7 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 		if hasResult {
 			result = result[:len(result)-1] + "]}"
 		} else {
-			result = "]}"
+			result = result + "]}"
 		}
 
 		return []byte(result), nil
