@@ -74,9 +74,11 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 	if function == "init" {
 		return t.Init(stub, "init", args)
 	} else if function == "ShipperShip" {
-		return t.ShipperShip(stub, args)
+		orderId, err := t.ShipperShip(stub, args)
+		return []byte(orderId), err
 	} else if function == "LogisticProviderShip" {
-		return t.LogisticProviderShip(stub, args)	
+		orderId, err := t.LogisticProviderShip(stub, args)
+		return []byte(orderId), err
 	}
 
 	fmt.Println("[IP] invoke did not find func: " + function)
@@ -85,11 +87,11 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 }
 
 // Salvar dados do embarcador
-func (t *SimpleChaincode) ShipperShip(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {	
+func (t *SimpleChaincode) ShipperShip(stub shim.ChaincodeStubInterface, args []string) (string, error) {	
 	fmt.Println("[IP][ShipperShip] save")
 
 	if len(args) != 9 {
-		return nil, errors.New("[IP][ShipperShip] Incorrect number of arguments. Expecting 9")
+		return "", errors.New("[IP][ShipperShip] Incorrect number of arguments. Expecting 9")
 	}
 
 	var order Order
@@ -112,7 +114,7 @@ func (t *SimpleChaincode) ShipperShip(stub shim.ChaincodeStubInterface, args []s
 	bytes, err = json.Marshal(order)
 
 	if err != nil { 		
-		return nil, errors.New("[IP][ShipperShip] Error marshalling order")
+		return "", errors.New("[IP][ShipperShip] Error marshalling order")
 	}
 
 	fmt.Println("[IP][ShipperShip] Order marshalled for OrderId" + order.OrderId)
@@ -122,18 +124,18 @@ func (t *SimpleChaincode) ShipperShip(stub shim.ChaincodeStubInterface, args []s
 	fmt.Println("[IP][ShipperShip] PutState for OrderId: " + order.OrderId)
 
 	if err != nil { 
-		return nil, errors.New("[ShipperShip] Unable to put the state") 
+		return "", errors.New("[ShipperShip] Unable to put the state") 
 	}
     
 	return t.SendEvent(stub, "ShipperShip", order.OrderId);
 }
 
 // Salvar dados do embarcador
-func (t *SimpleChaincode) LogisticProviderShip(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {	
+func (t *SimpleChaincode) LogisticProviderShip(stub shim.ChaincodeStubInterface, args []string) (string, error) {	
 	fmt.Println("[IP][LogisticProviderShip] save")
 
 	if len(args) != 5 {
-		return nil, errors.New("[IP][LogisticProviderShip] Incorrect number of arguments. Expecting 5")
+		return "", errors.New("[IP][LogisticProviderShip] Incorrect number of arguments. Expecting 5")
 	}
 
 	order, err := t.FindOrderById(stub, args[0])
@@ -146,7 +148,7 @@ func (t *SimpleChaincode) LogisticProviderShip(stub shim.ChaincodeStubInterface,
 	bytes, err := json.Marshal(order)
 
 	if err != nil { 		
-		return nil, errors.New("[IP][LogisticProviderShip] Error marshalling order")
+		return "", errors.New("[IP][LogisticProviderShip] Error marshalling order")
 	}
 
 	fmt.Println("[IP][LogisticProviderShip] Order marshalled for OrderId" + order.OrderId)
@@ -156,7 +158,7 @@ func (t *SimpleChaincode) LogisticProviderShip(stub shim.ChaincodeStubInterface,
 	fmt.Println("[IP][LogisticProviderShip] PutState for OrderId: " + order.OrderId)
 
 	if err != nil { 
-		return nil, errors.New("[IP][LogisticProviderShip] Unable to put the state") 
+		return "", errors.New("[IP][LogisticProviderShip] Unable to put the state") 
 	}
     
 	return t.SendEvent(stub, "LogisticProviderShip", order.OrderId);
@@ -175,7 +177,7 @@ func (t *SimpleChaincode) SendEvent(stub shim.ChaincodeStubInterface, source str
 	return orderId, errors.New("[IP][SendEvent] Unknown source: " + source) 
 }
 
-func (t *SimpleChaincode) QuoteForShipper(stub shim.ChaincodeStubInterface, orderId string) ([]byte, error) {
+func (t *SimpleChaincode) QuoteForShipper(stub shim.ChaincodeStubInterface, orderId string) (string, error) {
 	fmt.Println("[IP][Quote] for orderId: " + orderId)
 
 	order, err := t.FindOrderById(stub, orderId)
@@ -193,7 +195,7 @@ func (t *SimpleChaincode) QuoteForShipper(stub shim.ChaincodeStubInterface, orde
 	return orderId, err
 }
 
-func (t *SimpleChaincode) QuoteForLogisticProvider(stub shim.ChaincodeStubInterface, orderId string) ([]byte, error) {
+func (t *SimpleChaincode) QuoteForLogisticProvider(stub shim.ChaincodeStubInterface, orderId string) (string, error) {
 	fmt.Println("[IP][QuoteForLogisticProvider] for orderId: " + orderId)
 
 	order, err := t.FindOrderById(stub, orderId)
@@ -240,7 +242,7 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 
 		defer resultsIterator.Close()
 
-		result := "{orders: ["
+		result := "{\"orders\": ["
 		
 		for resultsIterator.HasNext() {
 			queryKeyAsStr, queryValAsBytes, err := resultsIterator.Next()
