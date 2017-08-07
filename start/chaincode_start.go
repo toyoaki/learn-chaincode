@@ -233,8 +233,8 @@ func (t *SimpleChaincode) FindOrderById(stub shim.ChaincodeStubInterface, orderI
 
 // Query is our entry point for queries
 func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
-	if len(args) != 3 {
-		return nil, errors.New("[IP][Query] Incorrect number of arguments. Expecting 3")
+	if len(args) != 4 {
+		return nil, errors.New("[IP][Query] Incorrect number of arguments. Expecting 4")
 	}
 
 	if function == "findByClientIdAndLogisticProviderId" {
@@ -247,6 +247,7 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 		clientId := args[0]
 		logisticProviderId := args[1]
 		pendingOrder, err := strconv.ParseBool(args[2])
+		findAll, err := strconv.ParseBool(args[3])
 
 		hasResult := false
 
@@ -277,9 +278,9 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 				findPendingOk = (order.LogisticProviderFinalShippingCost != 0)
 			}
 
-			fmt.Println("[IP][Query] ClientId: " + clientId + " | LogisticProviderId: " + logisticProviderId + " | PendingOrder: " + strconv.FormatBool(pendingOrder) + " | ClientIdOk: " + strconv.FormatBool(clientIdOk) + " | LogisticProviderIdOk: " + strconv.FormatBool(logisticProviderIdOk) + " | FindPendingOk: " + strconv.FormatBool(findPendingOk))
+			fmt.Println("[IP][Query] ClientId: " + clientId + " | LogisticProviderId: " + logisticProviderId + " | PendingOrder: " + strconv.FormatBool(pendingOrder) + " | ClientIdOk: " + strconv.FormatBool(clientIdOk) + " | LogisticProviderIdOk: " + strconv.FormatBool(logisticProviderIdOk) + " | FindPendingOk: " + strconv.FormatBool(findPendingOk) + " | FindAll: " + strconv.FormatBool(findAll))
 
-			if(clientIdOk && logisticProviderIdOk && findPendingOk) {
+			if(findAll || (clientIdOk && logisticProviderIdOk && findPendingOk)) {
 				result += string(queryValAsBytes) + ","
 				hasResult = true
 			}
