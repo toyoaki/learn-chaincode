@@ -200,7 +200,7 @@ func (t *SimpleChaincode) QuoteForLogisticProvider(stub shim.ChaincodeStubInterf
 
 	order, err := t.FindOrderById(stub, orderId)
 
-	order.LogisticProviderFinalShippingCost = order.InvoiceValue * order.LogisticProviderWeight * order.LogisticProviderWidth * order.LogisticProviderLength * order.LogisticProviderHeight
+	order.LogisticProviderFinalShippingCost = order.InvoiceValue * (order.LogisticProviderWeight + order.LogisticProviderWidth + order.LogisticProviderLength + order.LogisticProviderHeight)
 
 	fmt.Println("[IP][QuoteForLogisticProvider] calculated final shipping cost: " + strconv.Itoa(order.LogisticProviderFinalShippingCost) + " for orderId: " + orderId)
 
