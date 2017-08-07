@@ -49,6 +49,8 @@ type Order struct {
 }
 
 func main() {
+	fmt.Println("[IP] Start Contract")
+
 	err := shim.Start(new(SimpleChaincode))
 	if err != nil {
 		fmt.Printf("Error starting Simple chaincode: %s", err)
@@ -161,7 +163,7 @@ func (t *SimpleChaincode) LogisticProviderShip(stub shim.ChaincodeStubInterface,
 }
 
 // Simulate event sending
-func (t *SimpleChaincode) SendEvent(stub shim.ChaincodeStubInterface, source string, orderId string) ([]byte, error) {
+func (t *SimpleChaincode) SendEvent(stub shim.ChaincodeStubInterface, source string, orderId string) (string, error) {
 	fmt.Println("[IP][SendEvent] Send event with source " + source + " for OrderId: " + orderId)
 	
 	if source == "ShipperShip" {
@@ -170,7 +172,7 @@ func (t *SimpleChaincode) SendEvent(stub shim.ChaincodeStubInterface, source str
 		return t.QuoteForLogisticProvider(stub, orderId)	
 	}
 
-	return nil, errors.New("[IP][SendEvent] Unknown source: " + source) 
+	return orderId, errors.New("[IP][SendEvent] Unknown source: " + source) 
 }
 
 func (t *SimpleChaincode) QuoteForShipper(stub shim.ChaincodeStubInterface, orderId string) ([]byte, error) {
@@ -188,7 +190,7 @@ func (t *SimpleChaincode) QuoteForShipper(stub shim.ChaincodeStubInterface, orde
 
 	fmt.Println("[IP][Quote] saved order with orderId: " + orderId)
 
-	return nil, err
+	return orderId, err
 }
 
 func (t *SimpleChaincode) QuoteForLogisticProvider(stub shim.ChaincodeStubInterface, orderId string) ([]byte, error) {
@@ -206,7 +208,7 @@ func (t *SimpleChaincode) QuoteForLogisticProvider(stub shim.ChaincodeStubInterf
 
 	fmt.Println("[IP][QuoteForLogisticProvider] saved order with orderId: " + orderId)
 
-	return nil, err
+	return orderId, err
 }
 
 func (t *SimpleChaincode) FindOrderById(stub shim.ChaincodeStubInterface, orderId string) (Order, error){
