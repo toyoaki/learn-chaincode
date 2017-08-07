@@ -48,9 +48,6 @@ type Order struct {
     LogisticProviderFinalShippingCost   int         `json:"logistic_provider_final_shipping_cost"`
 }
 
-// ============================================================================================================================
-// Main
-// ============================================================================================================================
 func main() {
 	err := shim.Start(new(SimpleChaincode))
 	if err != nil {
@@ -69,7 +66,7 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string
 
 // Invoke is our entry point to invoke a chaincode function
 func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
-	fmt.Println("invoke is running " + function)
+	fmt.Println("[IP] invoke is running " + function)
 
 	
 	if function == "init" {
@@ -80,17 +77,17 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 		return t.LogisticProviderShip(stub, args)	
 	}
 
-	fmt.Println("invoke did not find func: " + function)
+	fmt.Println("[IP] invoke did not find func: " + function)
 
 	return nil, errors.New("Received unknown function invocation: " + function)
 }
 
 // Salvar dados do embarcador
 func (t *SimpleChaincode) ShipperShip(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {	
-	fmt.Println("[ShipperShip] save")
+	fmt.Println("[IP][ShipperShip] save")
 
 	if len(args) != 9 {
-		return nil, errors.New("[ShipperShip] Incorrect number of arguments. Expecting 9")
+		return nil, errors.New("[IP][ShipperShip] Incorrect number of arguments. Expecting 9")
 	}
 
 	var order Order
@@ -108,19 +105,19 @@ func (t *SimpleChaincode) ShipperShip(stub shim.ChaincodeStubInterface, args []s
     order.ClientLength, err       = strconv.Atoi(string(args[7]))
     order.ClientHeight, err       = strconv.Atoi(string(args[8]))
 
-    fmt.Println("[ShipperShip] Args parsed for OrderId: " + order.OrderId)
+    fmt.Println("[IP][ShipperShip] Args parsed for OrderId: " + order.OrderId)
 
 	bytes, err = json.Marshal(order)
 
-	fmt.Println("[ShipperShip] Order marshalled for OrderId" + order.OrderId)
-	
 	if err != nil { 		
-		return nil, errors.New("[ShipperShip] Error marshalling order")
+		return nil, errors.New("[IP][ShipperShip] Error marshalling order")
 	}
+
+	fmt.Println("[IP][ShipperShip] Order marshalled for OrderId" + order.OrderId)
 
 	err = stub.PutState(order.OrderId, bytes)
 
-	fmt.Println("[ShipperShip] PutState for OrderId: " + order.OrderId)
+	fmt.Println("[IP][ShipperShip] PutState for OrderId: " + order.OrderId)
 
 	if err != nil { 
 		return nil, errors.New("[ShipperShip] Unable to put the state") 
@@ -129,43 +126,105 @@ func (t *SimpleChaincode) ShipperShip(stub shim.ChaincodeStubInterface, args []s
 	return t.SendEvent(stub, "ShipperShip", order.OrderId);
 }
 
+// Salvar dados do embarcador
 func (t *SimpleChaincode) LogisticProviderShip(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {	
-	return t.SendEvent(stub, "LogisticProviderShip", "123");
+	fmt.Println("[IP][LogisticProviderShip] save")
+
+	if len(args) != 5 {
+		return nil, errors.New("[IP][LogisticProviderShip] Incorrect number of arguments. Expecting 5")
+	}
+
+	order, err := t.FindOrderById(stub, args[0])
+
+    order.LogisticProviderWeight, err       = strconv.Atoi(string(args[1]))
+    order.LogisticProviderWidth,  err       = strconv.Atoi(string(args[2]))
+    order.LogisticProviderLength, err       = strconv.Atoi(string(args[3]))
+    order.LogisticProviderHeight, err       = strconv.Atoi(string(args[4]))
+
+	bytes, err := json.Marshal(order)
+
+	if err != nil { 		
+		return nil, errors.New("[IP][LogisticProviderShip] Error marshalling order")
+	}
+
+	fmt.Println("[IP][LogisticProviderShip] Order marshalled for OrderId" + order.OrderId)
+
+	err = stub.PutState(order.OrderId, bytes)
+
+	fmt.Println("[IP][LogisticProviderShip] PutState for OrderId: " + order.OrderId)
+
+	if err != nil { 
+		return nil, errors.New("[IP][LogisticProviderShip] Unable to put the state") 
+	}
+    
+	return t.SendEvent(stub, "LogisticProviderShip", order.OrderId);
 }
 
 // Simulate event sending
 func (t *SimpleChaincode) SendEvent(stub shim.ChaincodeStubInterface, source string, orderId string) ([]byte, error) {
-	fmt.Println("[SendEvent] Send event with source " + source + " for OrderId: " + orderId)
-	return t.Quote(stub, orderId);
-}
-
-func (t *SimpleChaincode) Quote(stub shim.ChaincodeStubInterface, orderId string) ([]byte, error) {
-	fmt.Println("[Quote] for orderId: " + orderId)
-
-	var valAsBytes []byte
-	valAsBytes, err := stub.GetState(orderId)
-
-	if err != nil {		
-		return nil, errors.New("[Quote] Unknown error")
+	fmt.Println("[IP][SendEvent] Send event with source " + source + " for OrderId: " + orderId)
+	
+	if source == "ShipperShip" {
+		return t.QuoteForShipper(stub, orderId)
+	} else if source == "LogisticProviderShip" {
+		return t.QuoteForLogisticProvider(stub, orderId)	
 	}
 
-	var order Order
-	
-	json.Unmarshal(valAsBytes, &order)
+	return nil, errors.New("[IP][SendEvent] Unknown source: " + source) 
+}
 
-	fmt.Println("[Quote] found order: " + order.OrderId)
+func (t *SimpleChaincode) QuoteForShipper(stub shim.ChaincodeStubInterface, orderId string) ([]byte, error) {
+	fmt.Println("[IP][Quote] for orderId: " + orderId)
+
+	order, err := t.FindOrderById(stub, orderId)
 
 	order.ClientFinalShippingCost = order.InvoiceValue * order.ClientWeight * order.ClientWidth * order.ClientLength * order.ClientHeight
 
-	fmt.Println("[Quote] calculated final shipping cost: " + strconv.Itoa(order.ClientFinalShippingCost) + " for orderId: " + orderId)
+	fmt.Println("[IP][Quote] calculated final shipping cost: " + strconv.Itoa(order.ClientFinalShippingCost) + " for orderId: " + orderId)
 
 	orderAsBytes, err := json.Marshal(order)	
 	
 	err = stub.PutState(order.OrderId, orderAsBytes)
 
-	fmt.Println("[Quote] saved order with orderId: " + orderId)
+	fmt.Println("[IP][Quote] saved order with orderId: " + orderId)
 
 	return nil, err
+}
+
+func (t *SimpleChaincode) QuoteForLogisticProvider(stub shim.ChaincodeStubInterface, orderId string) ([]byte, error) {
+	fmt.Println("[IP][QuoteForLogisticProvider] for orderId: " + orderId)
+
+	order, err := t.FindOrderById(stub, orderId)
+
+	order.LogisticProviderFinalShippingCost = order.InvoiceValue * order.LogisticProviderWeight * order.LogisticProviderWidth * order.LogisticProviderLength * order.LogisticProviderHeight
+
+	fmt.Println("[IP][QuoteForLogisticProvider] calculated final shipping cost: " + strconv.Itoa(order.LogisticProviderFinalShippingCost) + " for orderId: " + orderId)
+
+	orderAsBytes, err := json.Marshal(order)	
+	
+	err = stub.PutState(order.OrderId, orderAsBytes)
+
+	fmt.Println("[IP][QuoteForLogisticProvider] saved order with orderId: " + orderId)
+
+	return nil, err
+}
+
+func (t *SimpleChaincode) FindOrderById(stub shim.ChaincodeStubInterface, orderId string) (Order, error){
+	fmt.Println("[IP][FindOrderById] orderId: " + orderId)
+
+	var order Order
+	var valAsBytes []byte
+	valAsBytes, err := stub.GetState(orderId)
+
+	if err != nil {		
+		return order, errors.New("[Quote] Unknown error")
+	}
+	
+	json.Unmarshal(valAsBytes, &order)
+
+	fmt.Println("[IP][FindOrderById] Order with orderId: " + orderId + " found")
+
+	return order, nil
 }
 
 // Query is our entry point for queries
@@ -174,7 +233,7 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 		resultsIterator, err := stub.RangeQueryState("order-0", "order-999999999")
 
 		if err != nil {
-			return nil, errors.New("[Query] Unknown error")
+			return nil, errors.New("[IP][Query] Unknown error")
 		}
 
 		defer resultsIterator.Close()
@@ -187,7 +246,7 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 			fmt.Println(queryKeyAsStr)
 
 			if err != nil {
-				return nil, errors.New("[Query] Unknown error")
+				return nil, errors.New("[IP][Query] Unknown error")
 			}
 
 			result += string(queryValAsBytes) + ","
@@ -202,5 +261,5 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 		return []byte(result), nil
 	}
 
-	return nil, errors.New("[Query] Received unknown function query: " + function)
+	return nil, errors.New("[IP][Query] Received unknown function query: " + function)
 }
