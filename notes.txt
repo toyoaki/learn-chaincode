@@ -1,0 +1,108 @@
+admin
+1197d66187
+
+{
+  "enrollId": "admin",
+  "enrollSecret": "1197d66187"
+}
+
+{
+  "enrollId": "user_type1_0",
+  "enrollSecret": "763dc75bd7"
+}
+
+----------------------------------------------------------------------------------------------------------------------------------
+Deploy Contract
+----------------------------------------------------------------------------------------------------------------------------------
+curl -X POST --header "Content-Type: application/json" --header "Accept: application/json" -d "{
+     \"jsonrpc\": \"2.0\",
+     \"method\": \"deploy\",
+     \"params\": {
+         \"type\": 1,
+         \"chaincodeID\": {
+             \"path\": \"https://github.com/toyoaki/learn-chaincode/start\"
+         },
+         \"ctorMsg\": {
+             \"function\": \"init\",
+             \"args\": [
+                 \"hi there 3\"
+             ]
+         },
+         \"secureContext\": \"admin\"
+     },
+     \"id\": 6
+}" "https://82563faee2b6481cbe53c0a4d8856f52-vp0.us.blockchain.ibm.com:5002/chaincode"
+
+----------------------------------------------------------------------------------------------------------------------------------
+ShipperShip
+----------------------------------------------------------------------------------------------------------------------------------
+curl -X POST --header "Content-Type: application/json" --header "Accept: application/json" -d "{
+  \"jsonrpc\": \"2.0\",
+  \"method\": \"invoke\",
+  \"params\": {
+    \"type\": 1,
+    \"chaincodeID\": {
+      \"name\": \"061321edc30417eaf788eec0f1c49be31d27541c918e88cd37c6fc47bb514eb156251ce21f5e10e20dd9a2bee2e7460e4d2987ecf55d32fe292ad22c4e6dcc1a\"
+    },
+    \"ctorMsg\": {
+      \"function\": \"ShipperShip\",
+      \"args\": [
+        \"666\", 
+        \"999\",
+        \"1001\",
+        \"01529020\",
+        \"07400001\",
+        \"5\",
+        \"1\",
+        \"2\",
+        \"4\"]
+    },
+    \"secureContext\": \"user_type1_0\"
+  },
+  \"id\": 5
+}" "https://82563faee2b6481cbe53c0a4d8856f52-vp0.us.blockchain.ibm.com:5002/chaincode"
+
+----------------------------------------------------------------------------------------------------------------------------------
+LogisticProviderShip
+----------------------------------------------------------------------------------------------------------------------------------
+curl -X POST --header "Content-Type: application/json" --header "Accept: application/json" -d "{
+  \"jsonrpc\": \"2.0\",
+  \"method\": \"invoke\",
+  \"params\": {
+    \"type\": 1,
+    \"chaincodeID\": {
+      \"name\": \"061321edc30417eaf788eec0f1c49be31d27541c918e88cd37c6fc47bb514eb156251ce21f5e10e20dd9a2bee2e7460e4d2987ecf55d32fe292ad22c4e6dcc1a\"
+    },
+    \"ctorMsg\": {
+      \"function\": \"LogisticProviderShip\",
+      \"args\": [
+        \"order-27131847\",
+        \"5\",
+        \"1\",
+        \"2\",
+        \"5\"]
+    },
+    \"secureContext\": \"user_type1_0\"
+  },
+  \"id\": 5
+}" "https://82563faee2b6481cbe53c0a4d8856f52-vp0.us.blockchain.ibm.com:5002/chaincode"
+
+----------------------------------------------------------------------------------------------------------------------------------
+FindByClientIdAndLogisticProviderId
+----------------------------------------------------------------------------------------------------------------------------------
+curl -X POST --header "Content-Type: application/json" --header "Accept: application/json" -d "{
+  \"jsonrpc\": \"2.0\",
+  \"method\": \"query\",
+  \"params\": {
+    \"type\": 1,
+    \"chaincodeID\": {
+      \"name\": \"061321edc30417eaf788eec0f1c49be31d27541c918e88cd37c6fc47bb514eb156251ce21f5e10e20dd9a2bee2e7460e4d2987ecf55d32fe292ad22c4e6dcc1a\"
+    },
+    \"ctorMsg\": {
+      \"function\": \"findByClientIdAndLogisticProviderId\",
+      \"args\": [\"-1\",\"-1\",\"false\",\"true\"]
+    },
+    \"secureContext\": \"user_type1_0\"
+  },
+  \"id\": 0
+}" "https://82563faee2b6481cbe53c0a4d8856f52-vp0.us.blockchain.ibm.com:5002/chaincode"
