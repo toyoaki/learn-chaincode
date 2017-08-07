@@ -233,12 +233,19 @@ func (t *SimpleChaincode) FindOrderById(stub shim.ChaincodeStubInterface, orderI
 
 // Query is our entry point for queries
 func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
-	if function == "findAll" {
+	if len(args) != 2 {
+		return nil, errors.New("[IP][Query] Incorrect number of arguments. Expecting 2")
+	}
+
+	if function == "findByClientIdAndLogisticProviderId" {
 		resultsIterator, err := stub.RangeQueryState("order-0", "order-999999999")
 
 		if err != nil {
 			return nil, errors.New("[IP][Query] Unknown error")
 		}
+
+		clientId := args[0]
+		logisticProviderId := args[1]
 
 		defer resultsIterator.Close()
 
@@ -247,13 +254,23 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 		for resultsIterator.HasNext() {
 			queryKeyAsStr, queryValAsBytes, err := resultsIterator.Next()
 
-			fmt.Println(queryKeyAsStr)
+			fmt.Println("[IP][Query] hack: " + queryKeyAsStr)
 
 			if err != nil {
 				return nil, errors.New("[IP][Query] Unknown error")
 			}
 
-			result += string(queryValAsBytes) + ","
+			var order Order
+			json.Unmarshal(queryValAsBytes, &order)
+
+			clientIdOk := clientId == "-1" || order.ClientId == clientId			 				
+			logisticProviderIdOk := logisticProviderId == "-1" || order.LogisticProviderId == logisticProviderId
+
+			fmt.Println("[IP][Query] ClientId: " + clientId + " | LogisticProviderId: " + logisticProviderId + " | ClientIdOk: " + strconv.FormatBool(clientIdOk) + " | LogisticProviderIdOk: " + strconv.FormatBool(logisticProviderIdOk))
+
+			if(clientIdOk && logisticProviderIdOk){			
+				result += string(queryValAsBytes) + ","
+			}
 		}
 
 		if len(result) == 1 {
